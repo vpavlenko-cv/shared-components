@@ -37,7 +37,7 @@ export default class Table extends React.Component {
   };
 
   render() {
-    const { rows, filter, headers, sorting } = this.props;
+    const { rows, filter, headers, sorting, pagination  } = this.props;
     return (
       <Wrap>
         <BaseTable cellPadding={0} cellSpacing={0}>
@@ -48,6 +48,7 @@ export default class Table extends React.Component {
             {rows}
           </TBody>
         </BaseTable>
+        {pagination}
       </Wrap>
     );
   }

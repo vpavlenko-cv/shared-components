@@ -48,7 +48,6 @@ export default class Table extends React.Component {
             {rows}
           </TBody>
         </BaseTable>
-        {pagination}
       </Wrap>
     );
   }

@@ -1,9 +1,7 @@
 import styled from 'styled-components';
 import get from 'extensions/themeGet';
 
-const NavigationBar = styled.header.withConfig({
-  displayName: 'NavigationBar',
-})`
+const NavigationBar = styled.header`
   background: ${get('colors.primary.default')};
   color: ${get('colors.text.inverted')};
   border-bottom: ${get('thicknesses.normal')} solid

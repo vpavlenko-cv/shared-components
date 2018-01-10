@@ -3,9 +3,7 @@ import get from 'extensions/themeGet';
 import NavigationItem from './NavigationItem';
 import NavigationBar from './NavigationBar';
 
-const NavigationItemList = styled.div.withConfig({
-  displayName: 'NavigationItemList',
-})`
+const NavigationItemList = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;

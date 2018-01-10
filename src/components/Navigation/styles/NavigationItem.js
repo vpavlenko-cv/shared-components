@@ -5,7 +5,7 @@ import NavigationItemList from './NavigationItemList';
 import NavigationItemListStack from './NavigationItemListStack';
 import NavigationBar from './NavigationBar';
 
-const NavigationItem = styled.div.withConfig({ displayName: 'NavigationItem' })`
+const NavigationItem = styled.div`
   border: 0;
   padding: ${get('spacing.large')} 0 ${get('spacing.large')} 0;
   line-height: 1;

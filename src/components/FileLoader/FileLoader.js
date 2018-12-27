@@ -1,17 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Dropzone from 'react-dropzone';
-import Icon from '../Icon';
-import FileLoaderDropArea from './styles/FileLoaderDropArea';
-import FileLoaderPreview from './styles/FileLoaderPreview';
+import Icon from 'components/Icon';
+import Link from 'components/Link';
+import * as styles from './styles';
 
 export default class FileLoader extends React.Component {
   static propTypes = {
-    /**
-     * A FileList object to use as the value of the input.
-     * Using undefined makes this an 'uncontrolled' input
-     */
-    value: PropTypes.instanceOf(FileList),
     /**
      * Handler for the onChange event on the input.
      */
@@ -35,11 +30,11 @@ export default class FileLoader extends React.Component {
     /**
      * A component to render the drop area
      */
-    DropArea: PropTypes.func,
+    DropArea: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render the preview container
      */
-    Preview: PropTypes.func,
+    Preview: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
@@ -47,8 +42,14 @@ export default class FileLoader extends React.Component {
     disabled: false,
     className: null,
     id: null,
-    DropArea: FileLoaderDropArea,
-    Preview: FileLoaderPreview,
+    DropArea: styles.DropArea,
+    Preview: styles.Preview,
+  };
+
+  static styles = styles;
+
+  preventLinkClick = ev => {
+    ev.preventDefault();
   };
 
   renderFiles = () => {
@@ -64,14 +65,27 @@ export default class FileLoader extends React.Component {
       return (
         <DropArea>
           <Icon name="file" />
-          <Preview>Drop a file here, or click to browse.</Preview>
+          <Preview>
+            DROP A FILE HERE, OR&nbsp;
+            <Link onClick={this.preventLinkClick}>CLICK TO BROWSE</Link>
+          </Preview>
         </DropArea>
       );
     }
   };
 
   render() {
-    const { onChange, value, required, disabled, className, id } = this.props;
+    const {
+      onChange,
+      value,
+      required,
+      disabled,
+      className,
+      id,
+      DropArea,
+      Preview,
+      ...rest
+    } = this.props;
 
     return (
       <Dropzone
@@ -85,6 +99,7 @@ export default class FileLoader extends React.Component {
         disabled={disabled}
         className={className}
         id={id}
+        {...rest}
       >
         {this.renderFiles()}
       </Dropzone>

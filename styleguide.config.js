@@ -2,60 +2,81 @@ const path = require('path');
 const defaultResolver = require('react-docgen').resolver
   .findAllExportedComponentDefinitions;
 const annotationResolver = require('react-docgen-annotation-resolver').default;
+const { readdirSync, lstatSync, existsSync } = require('fs');
+
+const isDirectory = s => lstatSync(s).isDirectory();
+const isFile = s => lstatSync(s).isFile();
+const getDirectories = s =>
+  readdirSync(s)
+    .map(name => path.join(s, name))
+    .filter(isDirectory);
+const getFiles = s =>
+  readdirSync(s)
+    .map(name => path.join(s, name))
+    .filter(isFile);
+
+const componentSections = p => {
+  return getDirectories(p).map(name => {
+    const section = {
+      name: path.basename(name),
+      components: getFiles(name).filter(
+        f => path.basename(f) !== 'index.js' && path.extname(f) === '.js',
+      ),
+    };
+    if (existsSync(path.join(name, 'README.md')))
+      section.content = path.join(name, 'README.md');
+    return section;
+  });
+};
 
 module.exports = {
   title: 'Bandwidth Shared React Components',
-  styleguideDir: 'docs',
+  styleguideDir: 'docsDist',
+  pagePerSection: true,
+  skipComponentsWithoutExample: true,
   sections: [
     {
-      name: 'Introduction',
-      content: 'docs/introduction.md',
-    },
-    {
-      name: 'Design',
+      name: 'About',
       sections: [
         {
-          name: 'Animation',
-          content: 'docs/design/animation.md',
-        },
-        {
-          name: 'Brand',
-          content: 'docs/design/brand.md',
+          name: 'Home',
+          content: 'docs/introduction.md',
         },
         {
           name: 'Color',
-          content: 'docs/design/color.md',
-        },
-        {
-          name: 'Layout',
-          content: 'docs/design/layout.md',
+          content: 'docs/color.md',
         },
         {
           name: 'Typography',
-          content: 'docs/design/typography.md',
+          content: 'docs/typography.md',
+        },
+        {
+          name: 'Layout',
+          content: 'docs/layout.md',
+        },
+        {
+          name: 'Loading',
+          content: 'docs/loading.md',
         },
       ],
     },
     {
       name: 'Components',
-      sections: [
-        {
-          name: 'Elements',
-          components: 'src/components/**/[A-Z]*.js',
-        },
-        {
-          name: 'Layouts',
-          components: 'src/layouts/**/**/[A-Z]*.js',
-        },
-        {
-          name: 'Behaviors',
-          components: 'src/behaviors/**/**/[A-Z]*.js',
-        },
-        {
-          name: 'Animations',
-          components: 'src/animations/**/**/[A-Z]*.js',
-        },
-      ],
+      // components: 'src/components/**/[A-Z]*.js',
+      sections: componentSections('./src/components'),
+    },
+    {
+      name: 'Layouts',
+      // components: 'src/layouts/**/[A-Z]*.js',
+      sections: componentSections('./src/layouts'),
+    },
+    {
+      name: 'Behaviors',
+      components: 'src/behaviors/*/[A-Z]*.js',
+    },
+    {
+      name: 'Skeletons',
+      components: 'src/skeletons/[A-Z]*.js',
     },
   ],
   theme: {
@@ -63,18 +84,25 @@ module.exports = {
       base: 14,
     },
     fontFamily: {
-      base: ['Bandwidth'],
+      base: '"Overpass", Raleway, "Open Sans", arial, sans-serif',
+      monospace: '"Source Code Pro", monospace',
     },
   },
-  ignore: [
-    'src/components/**/index.js',
-    'src/components/layout/Flow/fields/**/*.js',
+  ignore: ['src/components/**/index.js'],
+  require: [
+    'styled-components',
+    path.join(__dirname, 'src'),
+    path.join(__dirname, 'fonts/fonts.css'),
   ],
-  require: ['styled-components', path.join(__dirname, 'src')],
   styleguideComponents: {
     Logo: path.join(__dirname, 'tools/styleguide/Logo'),
     Wrapper: path.join(__dirname, 'tools/styleguide/Wrapper'),
     ComponentsList: path.join(__dirname, 'tools/styleguide/ComponentsList'),
+    TableRenderer: path.join(__dirname, 'tools/styleguide/TableRenderer'),
+    StyleGuideRenderer: path.join(
+      __dirname,
+      'tools/styleguide/StyleGuideRenderer',
+    ),
   },
   /**
    * Fix for styled-components; see
@@ -100,10 +128,6 @@ module.exports = {
           exclude: /node_modules/,
           use: {
             loader: 'babel-loader',
-            options: {
-              plugins: ['styled-components'],
-              presets: ['es2015', 'react', 'stage-0'],
-            },
           },
         },
         {
@@ -118,7 +142,6 @@ module.exports = {
                 localIdentName: 'cat__[local]_[path]',
               },
             },
-            'postcss-loader',
           ],
         },
         {

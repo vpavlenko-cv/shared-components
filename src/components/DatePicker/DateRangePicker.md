@@ -1,5 +1,3 @@
-This is a styling wrapper around [react-dates](https://github.com/airbnb/react-dates). Please see [here](https://github.com/airbnb/react-dates#daterangepicker) for prop types.
-
 ```javascript
 class Wrapper extends React.Component {
   constructor(props) {
@@ -14,7 +12,7 @@ class Wrapper extends React.Component {
         startDate={this.state.startDate}
         endDate={this.state.endDate}
         onDatesChange={({ startDate, endDate }) => {
-          this.setState({ startDate, endDate })
+          this.setState({ startDate, endDate });
           console.log(startDate);
           console.log(endDate);
         }}
@@ -30,6 +28,7 @@ class Wrapper extends React.Component {
     <Wrapper />
   </div>
   <Wrapper openDirection="up" />
+  <Wrapper disabled="endDate" />
   <Wrapper disabled />
-</div>
+</div>;
 ```

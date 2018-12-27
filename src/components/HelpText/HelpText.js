@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import get from 'extensions/themeGet';
+import userTextSpacing from 'extensions/userTextSpacing';
 
 const HelpText = styled.div.withConfig({ displayName: 'HelpText' })`
   color: ${props =>
@@ -9,6 +10,7 @@ const HelpText = styled.div.withConfig({ displayName: 'HelpText' })`
   font-style: italic;
   font-weight: 300;
   font-family: ${get('fonts.brand')};
+  margin: ${userTextSpacing};
 `;
 
 HelpText.propTypes = {
@@ -24,6 +26,11 @@ HelpText.propTypes = {
    * Whether this help text is in an error state
    */
   error: PropTypes.bool,
+  /**
+   * Specify a CSS value or an object { top, right, bottom, left } or { vertical, horizontal } to
+   * control the spacing around the heading. Defaults to a large space below the element.
+   */
+  spacing: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
 };
 
 HelpText.defaultProps = {

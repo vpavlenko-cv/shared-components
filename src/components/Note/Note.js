@@ -1,14 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import NoteContainer from './styles/NoteContainer';
-import NoteCorner from './styles/NoteCorner';
+import * as styles from './styles';
+import { defaultProps } from 'recompose';
 
-const Note = ({ children, Container, Corner }) => (
-  <Container>
+const Note = ({ children, Container, Corner, ...rest }) => (
+  <Container {...rest}>
     {children}
     <Corner />
   </Container>
 );
+
+Note.styles = styles;
 
 Note.propTypes = {
   /**
@@ -18,16 +20,20 @@ Note.propTypes = {
   /**
    * Override the component that renders the outer container
    */
-  Container: PropTypes.func,
+  Container: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   /**
    * Override the component that renders the corner
    */
-  Corner: PropTypes.func,
+  Corner: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
 };
 
 Note.defaultProps = {
-  Container: NoteContainer,
-  Corner: NoteCorner,
+  Container: styles.Container,
+  Corner: styles.Corner,
 };
+
+Note.Alternate = defaultProps({
+  Container: styles.Container.Alternate,
+})(Note);
 
 export default Note;

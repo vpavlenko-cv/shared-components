@@ -1,8 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Button from './Button';
-import Loader from '../Loader';
+import Loader from 'components/Loader';
 
+/**
+ * `Button.Submit` is intended to be used within a form. `Button.Submit` should only be used to represent a button
+ * that triggers the `onSubmit` actions (do not use for standard actions or cancellation).
+ * @visibleName Button.Submit
+ */
 class SubmitButton extends React.Component {
   static propTypes = {
     /**
@@ -73,25 +78,12 @@ class SubmitButton extends React.Component {
   };
 
   render() {
-    const {
-      pristine,
-      loading,
-      disabled,
-      leftIcon,
-      rightIcon,
-      id,
-      className,
-      onClick,
-    } = this.props;
+    const { pristine, loading, disabled, ...rest } = this.props;
     return (
       <Button
         disabled={pristine || loading || disabled}
-        leftIcon={leftIcon}
-        rightIcon={rightIcon}
         type="submit"
-        id={id}
-        className={className}
-        onClick={onClick}
+        {...rest}
       >
         {this.renderContents()}
       </Button>

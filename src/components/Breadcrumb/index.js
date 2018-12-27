@@ -1,2 +1,6 @@
-export default from './Breadcrumb';
-export Breadcrumbs from './Breadcrumbs';
+import Breadcrumb from './Breadcrumb';
+import Group from './BreadcrumbGroup';
+
+Breadcrumb.Group = Group;
+
+export default Breadcrumb;

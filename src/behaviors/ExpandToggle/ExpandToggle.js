@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import _ from 'lodash';
-import { Collapse } from 'react-collapse';
+import isFunction from 'lodash.isfunction';
+import { Collapse, UnmountClosed } from 'react-collapse';
 
 /**
  * A prototypical accordion element with no styling. Renders one element which can be
@@ -25,7 +25,8 @@ class ExpandToggle extends React.Component {
      * Content to render within the toggle area. You may optionally pass a function,
      * which will be called with the current toggle on/off state.
      */
-    toggleContent: PropTypes.node.isRequired,
+    toggleContent: PropTypes.oneOfType([PropTypes.func, PropTypes.node])
+      .isRequired,
     /**
      * Override ('control') toggling behavior, disabling default internal toggle state
      */
@@ -38,6 +39,14 @@ class ExpandToggle extends React.Component {
      * Whether to start expanded
      */
     startExpanded: PropTypes.bool,
+    /**
+     * If true, the user cannot change the state
+     */
+    disabled: PropTypes.bool,
+    /**
+     * If true, contents are unmounted when the accordion is closed.
+     */
+    unmountClosed: PropTypes.bool,
     /**
      * react-motion config, see https://github.com/chenglou/react-motion#--spring-val-number-config-springhelperconfig--opaqueconfig
      */
@@ -55,6 +64,9 @@ class ExpandToggle extends React.Component {
     isExpanded: null,
     startExpanded: false,
     springConfig: null,
+    disabled: false,
+    toggleContent: null,
+    unmountClosed: false,
   };
 
   constructor(props) {
@@ -65,10 +77,14 @@ class ExpandToggle extends React.Component {
   }
 
   handleToggle = () => {
+    if (this.props.disabled) {
+      return;
+    }
+
     if (this.props.onToggle) {
       this.props.onToggle(this.calcIsExpanded());
     }
-    this.setState({ internalIsExpanded: !this.state.internalIsExpanded });
+    this.setState(state => ({ internalIsExpanded: !state.internalIsExpanded }));
   };
 
   calcIsExpanded = () => {
@@ -82,25 +98,40 @@ class ExpandToggle extends React.Component {
   };
 
   renderToggle = () => {
-    const { toggleContent } = this.props;
-    if (_.isFunction(toggleContent)) {
-      return toggleContent(this.calcIsExpanded());
+    const { toggleContent, disabled } = this.props;
+    if (isFunction(toggleContent)) {
+      return toggleContent(this.calcIsExpanded(), disabled);
     }
     return toggleContent;
   };
 
   render() {
     const isExpanded = this.calcIsExpanded();
-    const { children, id, className, springConfig } = this.props;
+    const {
+      children,
+      id,
+      className,
+      springConfig,
+      disabled,
+      unmountClosed,
+    } = this.props;
+    const CollapseType = unmountClosed ? UnmountClosed : Collapse;
 
     return (
       <div id={id} className={className}>
-        <div style={{ cursor: 'pointer' }} onClick={this.handleToggle}>
+        <div
+          style={{ cursor: disabled ? 'auto' : 'pointer' }}
+          onClick={this.handleToggle}
+        >
           {this.renderToggle()}
         </div>
-        <Collapse isOpened={isExpanded} springConfig={springConfig}>
+        <CollapseType
+          hasNestedCollapse
+          isOpened={isExpanded}
+          springConfig={springConfig}
+        >
           {children}
-        </Collapse>
+        </CollapseType>
       </div>
     );
   }

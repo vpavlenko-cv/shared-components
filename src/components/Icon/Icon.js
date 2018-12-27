@@ -7,9 +7,10 @@ import get from 'extensions/themeGet';
 const Icon = styled.i.withConfig({ displayName: 'Icon' })`
   font-family: ${get('fonts.icon')};
   font-size: inherit;
-  color: inherit;
+  color: ${({ color }) => color || 'inherit'};
   font-style: normal;
   display: inline-block;
+  cursor: ${({ onClick }) => (onClick ? 'pointer' : 'inherit')};
   &::before {
     content: "${({ name, iconsHelper }) =>
       iconsHelper(name) || iconsHelper('help_2')}";
@@ -35,12 +36,17 @@ Icon.propTypes = {
    * Replace the icon helper function (advanced).
    */
   iconsHelper: PropTypes.func,
+  /**
+   * Color of the icon
+   */
+  color: PropTypes.string,
 };
 
 Icon.defaultProps = {
   className: null,
   id: null,
   iconsHelper: icons,
+  color: null,
 };
 
 /**

@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import styled from 'styled-components';
-import H1 from 'components/H';
 import Column from './PaneColumn';
 import Row from './PaneRow';
 import Section from './PaneSection';
-import theme from '../../theme';
-import PaneStyles from './styles/PaneStyles';
+import { PaneStyles } from './styles';
 
+/**
+ * @deprecated this layout pattern is no longer supported
+ */
 class Pane extends React.Component {
   static propTypes = {
     /**

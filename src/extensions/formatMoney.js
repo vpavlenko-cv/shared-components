@@ -1,4 +1,4 @@
-import { padEnd } from 'lodash';
+import padEnd from 'lodash.padend';
 
 const trimZeroes = str => {
   if (str[str.length - 1] === '0') {

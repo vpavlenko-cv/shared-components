@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Icon from '../Icon';
-import PaginationContainer from './styles/PaginationContainer';
-import PaginationItem from './styles/PaginationItem';
-import PaginationItemPlaceholder from './styles/PaginationItemPlaceholder';
+import Icon from 'components/Icon';
+import * as styles from './styles';
 
+/**
+ * A basic Pagination component that allows a user to move between pages. You need to provide the current page and other metadata.
+ */
 class Pagination extends React.Component {
   static propTypes = {
     /**
@@ -30,15 +31,15 @@ class Pagination extends React.Component {
     /**
      * A component to render a container for the pagination
      */
-    Container: PropTypes.func,
+    Container: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render a single pagination item
      */
-    Item: PropTypes.func,
+    Item: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render a placeholder space for a pagination item
      */
-    ItemPlaceholder: PropTypes.func,
+    ItemPlaceholder: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
@@ -46,10 +47,12 @@ class Pagination extends React.Component {
     currentPage: 0,
     className: null,
     id: null,
-    Container: PaginationContainer,
-    Item: PaginationItem,
-    ItemPlaceholder: PaginationItemPlaceholder,
+    Container: styles.Container,
+    Item: styles.Item,
+    ItemPlaceholder: styles.ItemPlaceholder,
   };
+
+  static styles = styles;
 
   createItemClickHandler = index => () => this.props.onPageSelected(index);
 
@@ -72,7 +75,10 @@ class Pagination extends React.Component {
 
   renderPrevious = () =>
     this.props.currentPage > 0 ? (
-      <this.props.Item onClick={this.handlePreviousClick}>
+      <this.props.Item
+        className="paginationBack"
+        onClick={this.handlePreviousClick}
+      >
         <Icon name="back" />
       </this.props.Item>
     ) : (
@@ -81,7 +87,10 @@ class Pagination extends React.Component {
 
   renderNext = () =>
     this.props.currentPage < this.props.pageCount - 1 ? (
-      <this.props.Item onClick={this.handleNextClick}>
+      <this.props.Item
+        className="paginationNext"
+        onClick={this.handleNextClick}
+      >
         <Icon name="forward" />
       </this.props.Item>
     ) : (
@@ -111,9 +120,9 @@ class Pagination extends React.Component {
   };
 
   render() {
-    const { id, className, Container } = this.props;
+    const { Container, onPageSelected, ...rest } = this.props;
     return (
-      <Container id={id} className={className}>
+      <Container {...rest}>
         {this.renderPrevious()}
         {this.renderItems()}
         {this.renderNext()}

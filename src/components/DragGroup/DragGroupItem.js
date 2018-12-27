@@ -3,12 +3,14 @@ import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import { DragSource } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import DragItemContainer from './styles/DragItemContainer';
+import * as styles from './styles';
+import { DragContext } from 'components/DragContainer';
 
 /**
  * Used to wrap an item used in DragGroup. See DragGroup documentation.
+ * @visibleName DragGroup.Item
  */
-class DragItem extends React.Component {
+class DragGroupItem extends React.Component {
   static propTypes = {
     /**
      * Must be exactly one node. The children will be passed a
@@ -27,8 +29,10 @@ class DragItem extends React.Component {
      * Provided by parent DragGroup
      * Indicates the current parent's group id.
      */
-    groupId: PropTypes.func,
+    groupId: PropTypes.oneOfType([PropTypes.func, PropTypes.number]),
   };
+
+  static styles = styles;
 
   componentDidMount() {
     // Use empty image as a drag preview so browsers don't draw it
@@ -45,7 +49,7 @@ class DragItem extends React.Component {
      * The element passed to connectDragSource must be a plain
      * React element, not a component. Thus, to do proper
      * vendor prefixing with styling, we assign a class name
-     * and traget it from DragItemContainer's styles; see
+     * and target it from DragItemContainer's styles; see
      * styles/DragItemContainer.js
      */
     this.props.connectDragSource(
@@ -61,18 +65,23 @@ class DragItem extends React.Component {
 
   render() {
     const {
-      connectDragSource,
-      connectDragPreview,
-      isDragging,
-      children,
-    } = this.props;
+      props: {
+        connectDragSource,
+        connectDragPreview,
+        isDragging,
+        children,
+        onMove,
+        ...rest
+      },
+      wrapDragHandle,
+    } = this;
 
     return (
-      <DragItemContainer isDragging={isDragging}>
-        {React.cloneElement(React.Children.only(children), {
-          wrapDragHandle: this.wrapDragHandle,
-        })}
-      </DragItemContainer>
+      <styles.DragItemContainer isDragging={isDragging} {...rest}>
+        <DragContext.Provider value={{ isDragging, wrapDragHandle }}>
+          {children}
+        </DragContext.Provider>
+      </styles.DragItemContainer>
     );
   }
 }
@@ -107,5 +116,5 @@ const collect = (connect, monitor) => ({
 });
 
 export default DragSource(props => props.itemType, itemSource, collect)(
-  DragItem,
+  DragGroupItem,
 );

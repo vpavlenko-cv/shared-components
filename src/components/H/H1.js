@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import get from 'extensions/themeGet';
+import userSpacing from 'extensions/userSpacing';
+import Skeleton from 'skeletons/Skeleton';
 
 import H2 from './H2';
 import H3 from './H3';
@@ -13,11 +15,17 @@ const H1 = styled.h1.withConfig({ displayName: 'H1' })`
   font-weight: 100;
   font-family: ${get('fonts.brand')};
   font-size: 2.5em;
-  margin: 0;
+  margin: ${userSpacing.text};
+  overflow: hidden;
   padding: 0;
 `;
 
 H1.propTypes = {
+  /**
+   * Specify a CSS value or an object { top, right, bottom, left } or { vertical, horizontal } to
+   * control the spacing around the heading. Defaults to a large space below the element.
+   */
+  spacing: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   /**
    * Adds a class name to the element.
    */
@@ -29,9 +37,12 @@ H1.propTypes = {
 };
 
 H1.defaultProps = {
+  spacing: { bottom: 'lg' },
   className: null,
   id: null,
 };
+
+H1.Skeleton = () => <Skeleton width="200px" height="2.5em" />;
 
 H1.H2 = H2;
 H1.H3 = H3;

@@ -2,9 +2,14 @@ import styled from 'styled-components';
 import get from 'extensions/themeGet';
 
 /**
+ * Applies styling to render multiline code.
  * @component
+ * @visibleName Code.Block
  */
-export default styled.pre`
+export default styled.code`
+  white-space: pre;
+  display: block;
+
   font-family: ${get('fonts.monospace')};
   font-size: 1em;
 

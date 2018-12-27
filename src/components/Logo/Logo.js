@@ -1,12 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withProps } from 'recompose';
-import LogoImage from './styles/LogoImage';
-import logo from './logo.png';
+import themeGet from 'extensions/themeGet';
+import LogoSvg from './logo.svg';
+import styled from 'styled-components';
 
-const Logo = ({ id, className, Image }) => (
-  <Image src={logo} id={id} className={className} />
-);
+const Logo = styled(LogoSvg)`
+  width: ${({ width }) => width};
+  fill: ${({ color }) => (color ? color : themeGet('colors.text.inverted'))};
+  height: ${({ height }) => (height ? height : themeGet('spacing.large'))};
+`;
 
 Logo.propTypes = {
   /**
@@ -18,22 +20,48 @@ Logo.propTypes = {
    */
   id: PropTypes.string,
   /**
-   * An img element component to render the image itself
+   * Sets the color of the logo.
    */
-  Image: PropTypes.func,
+  color: PropTypes.string,
+  /**
+   * Manually control the width of the logo. If only width is set, height
+   * will be based on the aspect ratio.
+   */
+  width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  /**
+   * Manually control the width of the logo. If only height is set, width
+   * will be based on the aspect ratio.
+   */
+  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 Logo.defaultProps = {
   className: null,
   id: null,
-  Image: LogoImage,
+  color: null,
+  height: null,
 };
 
-Logo.Small = withProps({
-  Image: LogoImage.Small,
-})(Logo);
-Logo.Large = withProps({
-  Image: LogoImage.Large,
-})(Logo);
+Logo.Small = styled(Logo)`
+  height: ${themeGet('spacing.medium')};
+`;
+Logo.Large = styled(Logo)`
+  height: ${themeGet('spacing.extraLarge')};
+`;
 
+Logo.Primary = styled(Logo)`
+  fill: ${themeGet('colors.primary.default')};
+`;
+Logo.Primary.Small = styled(Logo)`
+  fill: ${themeGet('colors.primary.default')};
+  height: ${themeGet('spacing.medium')};
+`;
+Logo.Primary.Large = styled(Logo)`
+  fill: ${themeGet('colors.primary.default')};
+  height: ${themeGet('spacing.extraLarge')};
+`;
+
+/**
+ * @component
+ */
 export default Logo;

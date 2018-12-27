@@ -1,11 +1,12 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import get from 'extensions/themeGet';
+import cssvars from 'themes/cssvars';
 
 export default styled.div`
   font-family: ${get('fonts.default')};
   background: ${get('colors.background.default')};
   color: ${get('colors.text.default')};
-  font-size: 14px;
+  font-size: ${get('fontSizes.default')};
   line-height: 1.5;
   letter-spacing: 0.28px;
 

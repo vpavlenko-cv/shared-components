@@ -1,18 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withProps } from 'recompose';
+import { defaultProps } from 'recompose';
 
-import ExpandToggle from '../../behaviors/ExpandToggle';
-import AccordionLabel from './styles/AccordionLabel';
-import AccordionArrow from './styles/AccordionArrow';
-import AccordionBorder from './styles/AccordionBorder';
-import AccordionLabelText from './styles/AccordionLabelText';
-import AccordionContent from './styles/AccordionContent';
-import AccordionGroup from './AccordionGroup';
+import { ExpandToggle } from 'behaviors';
+import * as styles from './styles';
 
 /**
- * Accordion works like a controllable component. Provide the
- * isExpanded prop to control it, or don't to let it control itself.
+ * Accordion expands and collapses when the label is clicked. Alternatively, you can provide the `isExpanded` prop to force open/closed state.
+ * You can also provide a hook to `onToggle`. Your `onToggle` function will be called with one parameter, a boolean representing whether
+ * the component is currently collapsed at the time it was clicked.
+ *
+ * Accepts `label` to define what's rendered in the label.
  */
 class Accordion extends React.Component {
   static propTypes = {
@@ -23,11 +21,17 @@ class Accordion extends React.Component {
     /**
      * Content inside the collapsible part of the accordion.
      */
-    children: PropTypes.node.isRequired,
+    children: PropTypes.node,
     /**
-     * Pass isExpanded to override the internal collapsing state
+     * Pass isExpanded to override the internal collapsing state (makes the expanded state a controlled value, please
+     * use onToggle to manage the state yourself or startExpanded if you just want to set the initial state).
      */
     isExpanded: PropTypes.bool,
+    /**
+     * Use this to set the default initial state of the internal expanded state without
+     * turning it into a controlled value.
+     */
+    startExpanded: PropTypes.bool,
     /**
      * DEPRECATED: the negation of isExpanded, overrides internal collapse state
      */
@@ -37,6 +41,16 @@ class Accordion extends React.Component {
      */
     onToggle: PropTypes.func,
     /**
+     * If true, the user cannot change the expanded state of this
+     * accordion.
+     */
+    disabled: PropTypes.bool,
+    /**
+     * If true, contents are unmounted when the accordion is closed. Useful for improving performance when the Accordion
+     * contains a large amount of complex contents.
+     */
+    unmountClosed: PropTypes.bool,
+    /**
      * Set a classname for the accordion container element.
      */
     className: PropTypes.string,
@@ -45,39 +59,54 @@ class Accordion extends React.Component {
      */
     id: PropTypes.string,
     /**
+     * react-motion config, see https://github.com/chenglou/react-motion#--spring-val-number-config-springhelperconfig--opaqueconfig
+     */
+    springConfig: PropTypes.shape({
+      stiffness: PropTypes.number,
+      damping: PropTypes.number,
+      precision: PropTypes.number,
+    }),
+    /**
      * A component to render the border
      */
-    Border: PropTypes.func,
+    Border: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render the label
      */
-    Label: PropTypes.func,
+    Label: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render the arrow
      */
-    Arrow: PropTypes.func,
+    Arrow: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render the text inside the label
      */
-    LabelText: PropTypes.func,
+    LabelText: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render the content area
      */
-    Content: PropTypes.func,
+    Content: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
     isExpanded: null,
+    startExpanded: false,
     isCollapsed: null,
     onToggle: null,
     className: null,
     id: null,
-    Border: AccordionBorder,
-    Label: AccordionLabel,
-    Arrow: AccordionArrow,
-    LabelText: AccordionLabelText,
-    Content: AccordionContent,
+    disabled: false,
+    unmountClosed: false,
+    springConfig: null,
+    Border: styles.Border,
+    Label: styles.Label,
+    Arrow: styles.Arrow,
+    LabelText: styles.LabelText,
+    Content: styles.Content,
+    labelSpacing: 'lg',
   };
+
+  static styles = styles;
 
   coalesceIsExpandedProps = () => {
     const { isExpanded, isCollapsed } = this.props;
@@ -90,24 +119,43 @@ class Accordion extends React.Component {
     return isExpanded;
   };
 
-  renderLabel = isExpanded => (
-    <this.props.Label onClick={this.handleToggle}>
+  renderLabel = (isExpanded, disabled) => (
+    <this.props.Label spacing={this.props.labelSpacing} disabled={disabled}>
       <this.props.Arrow isExpanded={isExpanded} name="forward" size={21} />
       <this.props.LabelText>{this.props.label}</this.props.LabelText>
     </this.props.Label>
   );
 
   render() {
-    const { id, className, onToggle, children, Border, Content } = this.props;
+    const {
+      id,
+      className,
+      onToggle,
+      children,
+      Border,
+      Content,
+      Label,
+      Arrow,
+      LabelText,
+      startExpanded,
+      disabled,
+      unmountClosed,
+      springConfig,
+      ...rest
+    } = this.props;
 
     return (
-      <Border>
+      <Border disabled={disabled} {...rest}>
         <ExpandToggle
           id={id}
           className={className}
           onToggle={onToggle}
           toggleContent={this.renderLabel}
           isExpanded={this.coalesceIsExpandedProps()}
+          startExpanded={startExpanded}
+          disabled={disabled}
+          unmountClosed={unmountClosed}
+          springConfig={springConfig}
         >
           <Content>{children}</Content>
         </ExpandToggle>
@@ -116,12 +164,11 @@ class Accordion extends React.Component {
   }
 }
 
-Accordion.Small = withProps({
-  Border: AccordionBorder.Small,
-  Arrow: AccordionArrow.Small,
-  Label: AccordionLabel.Small,
-  Content: AccordionContent.Small,
+Accordion.Small = defaultProps({
+  Border: styles.Border.Small,
+  Arrow: styles.Arrow.Small,
+  Label: styles.Label.Small,
+  labelSpacing: '20px',
 })(Accordion);
-Accordion.Group = AccordionGroup;
 
 export default Accordion;

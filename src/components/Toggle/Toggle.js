@@ -1,11 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import generateId from '../../extensions/generateId';
-import ToggleContainer from './styles/ToggleContainer';
-import ToggleInput from './styles/ToggleInput';
-import ToggleLabel from './styles/ToggleLabel';
+import generateId from 'extensions/generateId';
+import Skeleton from 'skeletons/Skeleton';
+import * as styles from './styles';
 
-class Toggle extends React.Component {
+/**
+ * A simple `Toggle` component thta can be turned on and off. Use `checked` to set
+ * whether the `Toggle` is selected.
+ */
+class Toggle extends React.PureComponent {
   static propTypes = {
     /**
      * Adds a class name to the input element.
@@ -16,9 +19,15 @@ class Toggle extends React.Component {
      */
     id: PropTypes.string,
     /**
-     * The value of the toggle.
+     * The literal value this toggle represents. For example, if this toggle
+     * represents whether the app is in "Dark Mode", you might provide "darkMode"
+     * to this prop to represent that value key.
      */
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+    value: PropTypes.string,
+    /**
+     * Whether the toggle is 'on' or 'off'.
+     */
+    checked: PropTypes.bool,
     /**
      * Whether the toggle is required for form submission.
      */
@@ -27,6 +36,10 @@ class Toggle extends React.Component {
      * Whether the user is prevented from interacting with the toggle.
      */
     disabled: PropTypes.bool,
+    /**
+     * Adds a name to the underlying input.
+     */
+    name: PropTypes.string,
     /**
      * A description to display next to the toggle.
      */
@@ -38,29 +51,33 @@ class Toggle extends React.Component {
     /**
      * A component to render the container around the toggle and label
      */
-    Container: PropTypes.func,
+    Container: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render the input element, usually hidden
      */
-    Input: PropTypes.func,
+    Input: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render the label, which usually also renders the toggle itself
      */
-    Label: PropTypes.func,
+    Label: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
     className: null,
     id: null,
-    value: false,
+    value: undefined,
+    checked: undefined,
+    name: null,
     required: false,
     disabled: false,
     description: null,
     onChange: () => null,
-    Container: ToggleContainer,
-    Input: ToggleInput,
-    Label: ToggleLabel,
+    Container: styles.Container,
+    Input: styles.Input,
+    Label: styles.Label,
   };
+
+  static styles = styles;
 
   defaultId = generateId('toggle');
 
@@ -68,30 +85,47 @@ class Toggle extends React.Component {
     const {
       className,
       disabled,
-      value,
       required,
+      name,
       description,
       onChange,
       Container,
       Input,
       Label,
+      id,
+      value,
+      checked,
+      ...rest
     } = this.props;
-    const id = this.props.id || this.defaultId;
+    const finalId = id || this.defaultId;
     return (
       <Container>
         <Input
-          id={id}
+          id={finalId}
           className={className}
+          name={name}
           type="checkbox"
           disabled={disabled}
-          checked={!!value}
+          checked={checked}
+          value={value}
           required={required}
           onChange={onChange}
+          {...rest}
         />
-        <Label htmlFor={id}>{description}</Label>
+        <Label htmlFor={finalId}>{description}</Label>
       </Container>
     );
   }
 }
+
+Toggle.Skeleton = props => (
+  <Toggle
+    Input={() => <Skeleton width="58px" height="30px" />}
+    Label={() => (
+      <Skeleton style={{ marginLeft: '15px' }} width="150px" height="30px" />
+    )}
+    {...props}
+  />
+);
 
 export default Toggle;

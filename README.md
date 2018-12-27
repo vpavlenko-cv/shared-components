@@ -1,53 +1,63 @@
 # bandwidth-shared-components
 Shared Component Library for Bandwidth React Apps
 
+## V6 Is Out!
+
+SCL V6 improves greatly on overall user experience, providing more consistency across components and more reliability for some complex experiences like pop-overs and Select.
+
+We hope the new changes lead to a more seamless development experience and make the migration worth it! [Read the full changelog](https://github.com/Bandwidth/shared-components/blob/master/CHANGELOG.md)
+
+We will still be supporting V5 for a little while as we make the migration for projects at Bandwidth. You can still find the V5 docs [here](http://dev.bandwidth.com/shared-components/v5).
+
 ## [Documentation](http://dev.bandwidth.com/shared-components)
 
 # How to use this library
 
-Install the library as an NPM module. `npm i --save @bandwidth/shared-components`
+Install the library as an NPM module. `npm i --save @bandwidth/shared-components styled-components`
 
-Add the `BandwidthThemeProvider` to the root of your React component structure:
+> `styled-components` is a peer dependency and required for usage
+
+Add the `BandwidthProvider` to the root of your React component structure:
 
 ```javascript
-import { BandwidthThemeProvider } from '@bandwidth/shared-components';
+import { BandwidthProvider } from '@bandwidth/shared-components';
 
 ...
 
-<BandwidthThemeProvider>
+<BandwidthProvider>
   <MyApp />
-</BandwidthThemeProvider>
+</BandwidthProvider>
 ```
 
-Now you can start including the components in your code. Require them by traversing the directory structure of the module:
+Now you can start including the components in your code. Require them by name from the module root:
 
 ```javascript
 import { Button } from '@bandwidth/shared-components'`;
 ```
 
-If you want to make this easier, you can alias the module in Webpack:
+## Loading Fonts
 
-```javascript
-resolve: {
-  modules: ['node_modules'],
-  alias: {
-    'shared-components': '@bandwidth/shared-components',
-  },
-  extensions: ['.js', '.jsx'],
-},
+As of `v6.x`, this library no longer loads fonts for you. You must include them in your project yourself.
+
+For your convenience, we've provided a `fonts/fonts.css` file in the NPM package. You can use it to quickly bootstrap both our brand font (Overpass) and icon font. For instance, if you're using Webpack, you can do:
+
+```
+import '@bandwidth/shared-components/fonts/fonts.css`;
 ```
 
-With this alias, you could just type:
+anywhere in your project to load the fonts automatically.
 
-```javascript
-import { Button } from 'shared-components';
-```
+Other project types will need to determine how to include the appropriate font files. We provide our icon font files in the `/fonts` directory, which you may copy as needed. You can [get Overpass from Google Fonts](https://fonts.google.com/specimen/Overpass).
 
 # Developing
 
-To develop locally, run `npm run styleguide`. The docs should then be available at `http://localhost:6060`. Live reloading, etc should work as well.
+To develop locally, run `npm run start`. The docs should then be available at `http://localhost:6060`. Live reloading, etc should work as well. Alternatively, you can develop against Storybook by running `npm run storybook` and visiting `http://localhost:9001`.
 
 Please refer to the [contributing guide](https://github.com/Bandwidth/shared-components/blob/master/.github/CONTRIBUTING.md) and read through the pull request template before submitting a PR!
+
+# Publishing the Docs
+
+Our docs live on the `gh-pages` branch. Publishing them is easy - just run the `npm run deploy` command. It will manage switching branches, copying files and pushing for you.
 
 # License
 

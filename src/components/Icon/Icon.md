@@ -1,6 +1,6 @@
 Icons let you easily render some of our icons. Pass in the `name` prop to specify which one.
 
-The icon definition file is in `components/helpers/icons.js`
+The icon definition file is in `components/Icons/icons.js`
 
 ```
 <Icon name="checkmark" />
@@ -8,18 +8,27 @@ The icon definition file is in `components/helpers/icons.js`
 
 _Available Icons:_
 
-```javascript
+```javascript noeditor
 const icons = require('./icons').map;
-const iconItemStyle = { border: '1px solid #f1f1f1', padding: '2px', margin: '2px', display: 'inline-block' };
 const IconList = () => (
-  <div>
-  {
-    Object.keys(icons).map((icon) => (
-      <span key={icon} style={iconItemStyle}>{icon}&nbsp;<Icon name={icon} /></span>
-    ))
-  }
-  </div>
+  <Table.Small
+    headers={
+      <Table.Row>
+        <Table.Header>Icon</Table.Header>
+        <Table.Header>Name</Table.Header>
+      </Table.Row>
+    }
+  >
+    {Object.keys(icons).map(icon => (
+      <Table.Row key={icon}>
+        <Table.Cell>
+          <Icon name={icon} />
+        </Table.Cell>
+        <Table.Cell>{icon}</Table.Cell>
+      </Table.Row>
+    ))}
+  </Table.Small>
 );
-<IconList />
-```
 
+<IconList />;
+```

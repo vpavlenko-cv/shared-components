@@ -1,11 +1,26 @@
-A simple checkbox input.
+#### Uncontrolled (interactive) checkbox
 
-***Checked checkbox***
-```
-<Checkbox value={true} description="Foo" />
+```js
+<div>
+  <Checkbox description="Foo" />
+  <Checkbox description="Bar" />
+</div>
 ```
 
-***UnChecked checkbox***
+#### Disabled empty checkbox
+
+```js
+<Checkbox disabled description="Baz" />
 ```
-<Checkbox description="Bar" />
+
+#### Disabled checked checkbox
+
+```js
+<Checkbox disabled checked description="Bop" />
+```
+
+#### Small checkbox (used for tables)
+
+```js
+<Checkbox.Small />
 ```

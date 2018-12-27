@@ -1,6 +1,7 @@
-export Page from './Page';
-export SidebarLayout from './SidebarLayout';
-export Pane from './Pane';
-
-// FIXME: needed for generated module resolution
-export default null;
+export { default as Pane } from './Pane';
+export { default as SplitContentLayout } from './SplitContentLayout';
+export { default as RootLayout } from './RootLayout';
+export { default as Field } from './Field';
+export { default as Horizontal } from './Horizontal';
+export { default as Spacing } from './Spacing';
+export { default as Grid } from './Grid';

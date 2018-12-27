@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import Item from './ListItem';
-import theme from '../../theme';
 
 const OrderedList = styled.ol.withConfig({ displayName: 'OrderedList' })`
   margin: 0 0 1em;

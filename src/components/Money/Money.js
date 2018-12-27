@@ -1,8 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import formatMoney from '../../extensions/formatMoney';
-import MoneyStyles from './styles/MoneyStyles';
+import formatMoney from 'extensions/formatMoney';
+import * as styles from './styles';
 
+/**
+ * The Money component renders a monetary value with a color and sign to indicate positive or negative.
+ * It formats decimal values and adds a $ to the beginning, so just pass in the raw number/string value
+ * for `value`. Use the `showSign` prop to turn off the plus/minus sign.
+ */
 class Money extends React.Component {
   static propTypes = {
     /**
@@ -24,7 +29,7 @@ class Money extends React.Component {
     /**
      * A component to render the text itself. Will be passed a `value` Number prop.
      */
-    Styles: PropTypes.func,
+    Styles: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
@@ -32,21 +37,23 @@ class Money extends React.Component {
     className: null,
     id: null,
     value: 0,
-    Styles: MoneyStyles,
+    Styles: styles.MoneyStyles,
   };
 
-  getSign() {
+  static styles = styles;
+
+  get sign() {
     const { value } = this.props;
     return value >= 0 ? '+' : '-';
   }
 
   render() {
-    const { value, showSign, id, className, Styles } = this.props;
+    const { value, showSign, id, className, Styles, ...rest } = this.props;
     return (
-      <Styles value={value} id={id} className={className}>
-        {showSign ? this.getSign(value) : null}
-        {/* sign is already present, so remove it from the formatted number */}
-        ${formatMoney(value).replace('-', '')}
+      <Styles value={value} id={id} className={className} {...rest}>
+        {showSign ? this.sign : null}
+        {/* sign is already present, so remove it from the formatted number */}$
+        {formatMoney(value).replace('-', '')}
       </Styles>
     );
   }

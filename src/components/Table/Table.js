@@ -2,19 +2,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withProps } from 'recompose';
 
-import Loader from '../Loader';
+import SkeletonTable from './SkeletonTable';
+import Loader from 'components/Loader';
+import ScrollShadow from 'behaviors/ScrollShadow';
 
-import TableStyles from './styles/TableStyles';
-import TableOverlay from './styles/TableOverlay';
-
-import Cell from './styles/TableCell';
-import Header from './TableHeader';
-import Row from './styles/TableRow';
-import Controls from './TableControls';
-import Simple from './SimpleTable';
 import RowDetails from './TableRowDetails';
-import TableWrap from './TableWrap';
-import TableBody from './styles/TableBody';
+import Header from './TableHeader';
+
+import * as styles from './styles';
 
 class Table extends React.Component {
   static propTypes = {
@@ -45,15 +40,19 @@ class Table extends React.Component {
     /**
      * A component to render the table element
      */
-    Styles: PropTypes.func,
+    Styles: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render any content that overlays the table itself
      */
-    Overlay: PropTypes.func,
+    Overlay: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component that wraps the whole table as a scroll context
      */
-    Wrap: PropTypes.func,
+    ScrollContainer: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+    /**
+     * A component that renders a <tbody>
+     */
+    Body: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
@@ -62,50 +61,54 @@ class Table extends React.Component {
     id: null,
     headers: null,
     wrapBody: true,
-    Styles: TableStyles,
-    Overlay: TableOverlay,
-    Wrap: TableWrap,
+    Styles: styles.TableStyles,
+    Overlay: styles.Overlay,
+    ScrollContainer: styles.ScrollContainer,
+    Body: styles.Body,
   };
+
+  static styles = styles;
 
   render() {
     const {
-      children,
-      headers,
-      loading,
       className,
       id,
+      children,
+      loading,
+      headers,
       wrapBody,
-      Wrap,
       Styles,
       Overlay,
+      Body,
+      ScrollContainer,
+      ...rest
     } = this.props;
     return (
-      <Wrap>
+      <ScrollShadow horizontal ScrollContainer={ScrollContainer} {...rest}>
         <Styles cellPadding={0} cellSpacing={0} className={className} id={id}>
           <thead>{headers}</thead>
-          {wrapBody ? <TableBody>{children}</TableBody> : children}
+          {wrapBody ? <Body>{children}</Body> : children}
         </Styles>
         {loading && (
           <Overlay>
             <Loader />
           </Overlay>
         )}
-      </Wrap>
+      </ScrollShadow>
     );
   }
 }
 
-Table.Row = Row;
+Table.Row = styles.Row;
 Table.Header = Header;
-Table.Cell = Cell;
-Table.Controls = Controls;
-Table.Simple = Simple;
+Table.Cell = styles.Cell;
 Table.RowDetails = RowDetails;
-Table.Wrap = TableWrap;
-Table.Body = TableBody;
+Table.Skeleton = SkeletonTable;
+Table.Body = styles.Body;
 
 Table.Small = withProps({
-  Styles: TableStyles.Small,
+  Styles: styles.TableStyles.Small,
 })(Table);
+Table.Small.Skeleton = SkeletonTable.Small;
 
 export default Table;

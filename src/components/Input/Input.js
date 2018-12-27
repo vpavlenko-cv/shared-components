@@ -1,12 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withProps } from 'recompose';
-import styled, { css } from 'styled-components';
-import Anchor from '../Anchor';
-import InputStyles from './styles/InputStyles';
-import InputRevealPasswordWrapper from './styles/InputRevealPasswordWrapper';
+import { defaultProps } from 'recompose';
+import Skeleton from 'skeletons/Skeleton';
+import Link from 'components/Link';
+import * as styles from './styles';
 
-class Input extends React.Component {
+class Input extends React.PureComponent {
   static propTypes = {
     /**
      * The value of the input.
@@ -37,9 +36,29 @@ class Input extends React.Component {
      */
     required: PropTypes.bool,
     /**
+     * Controls whether the user can modify the element - typically displays differently from disabled.
+     */
+    readOnly: PropTypes.bool,
+    /**
+     * Limits the maximum length of the input.
+     */
+    maxLength: PropTypes.number,
+    /**
+     * Limits the minimum value of the input - note that this value is primarily for its semantic meaning.
+     */
+    min: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    /**
+     * Limits the maximum value of the input - note that this value is primarily for its semantic meaning.
+     */
+    max: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    /**
      * Adds an id to the element.
      */
     id: PropTypes.string,
+    /**
+     * Adds an name to the element.
+     */
+    name: PropTypes.string,
     /**
      * Adds a class name to the element.
      */
@@ -81,28 +100,46 @@ class Input extends React.Component {
      */
     disableShowPassword: PropTypes.bool,
     /**
+     * Suggests to most browsers whether they should autocomplete the field
+     */
+    autoComplete: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+    /**
      * Provides a reference to the input element
      */
     inputRef: PropTypes.func,
     /**
      * A component that renders the internal input element
      */
-    Styles: PropTypes.func,
+    Styles: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component that wraps the whole element and helps control spacing
      * when reveal password is enabled
      */
-    RevealPasswordWrapper: PropTypes.func,
+    InlineContentWrapper: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.object,
+    ]),
     /**
      * A react node that is displayed inside input element
      */
     inlineContent: PropTypes.node,
+    /**
+     * Lets you make this input appear to be focused (does not actually
+     * change the focus state of the element)
+     */
+    appearFocused: PropTypes.bool,
+    /**
+     * Hides the cursor from view
+     */
+    hideCursor: PropTypes.bool,
   };
 
   static defaultProps = {
     disabled: false,
     required: false,
+    readOnly: false,
     id: null,
+    name: null,
     type: 'text',
     onChange: () => null,
     onBlur: () => null,
@@ -113,10 +150,19 @@ class Input extends React.Component {
     error: false,
     placeholder: '',
     disableShowPassword: false,
-    Styles: InputStyles,
-    RevealPasswordWrapper: InputRevealPasswordWrapper,
+    Styles: styles.InputStyles,
+    InlineContentWrapper: styles.InlineContentWrapper,
     inlineContent: null,
+    maxLength: null,
+    min: null,
+    max: null,
+    autoComplete: true,
+    spellCheck: 'false',
+    appearFocused: false,
+    hideCursor: false,
   };
+
+  static styles = styles;
 
   componentDidMount() {
     this.setState({
@@ -130,17 +176,28 @@ class Input extends React.Component {
   }
 
   onBlur = event => {
-    console.log(event);
     this.setState({ visited: true });
     if (this.props.onBlur) {
       this.props.onBlur(event);
     }
   };
 
+  getAutoComplete = () => {
+    const { autocomplete, autoComplete } = this.props;
+    if (
+      autocomplete === true ||
+      autocomplete === 'on' ||
+      autoComplete === true ||
+      autoComplete === 'on'
+    )
+      return 'on';
+    // Prevent browsers from completing this field like a password.
+    if (this.state._type === 'password') return 'new-password';
+    return 'off';
+  };
+
   renderPasswordField = () => {
-    const { RevealPasswordWrapper } = this.props;
-    const toggleState = () =>
-      this.state._type === 'password' ? 'text' : 'password';
+    const toggleState = type => (type === 'password' ? 'text' : 'password');
     const handleClick = evt => {
       evt.preventDefault();
       this.setState({
@@ -150,9 +207,9 @@ class Input extends React.Component {
 
     const inlineNode = (
       <div>
-        <Anchor href="" onClick={handleClick}>
+        <Link href="" onClick={handleClick}>
           {this.state._type === 'password' ? 'Show' : 'Hide'}
-        </Anchor>
+        </Link>
       </div>
     );
 
@@ -160,12 +217,12 @@ class Input extends React.Component {
   };
 
   renderInlineContent = node => {
-    const { RevealPasswordWrapper } = this.props;
+    const { InlineContentWrapper } = this.props;
     return (
-      <RevealPasswordWrapper>
+      <InlineContentWrapper>
         {this.renderInputField()}
-        {node}
-      </RevealPasswordWrapper>
+        <div>{node}</div>
+      </InlineContentWrapper>
     );
   };
 
@@ -183,32 +240,43 @@ class Input extends React.Component {
       error,
       placeholder,
       inputRef,
-      onBlur,
       Styles,
       inlineContent,
+      readOnly,
+      name,
+      maxLength,
+      min,
+      max,
+      ...rest
     } = this.props;
 
     const { visited, _type: type } = this.state;
 
     return (
       <Styles
-        onBlur={this.onBlur}
         onKeyDown={onKeyDown}
         onFocus={onFocus}
         visited={visited}
         id={id}
+        name={name}
         className={className}
         invalid={invalid}
         onChange={onChange}
         value={value}
         required={required}
-        type={type}
         error={error}
         disabled={disabled}
+        readOnly={readOnly}
         placeholder={placeholder}
-        innerRef={inputRef}
-        onBlur={onBlur}
+        ref={inputRef}
         inlineContent={inlineContent}
+        maxLength={maxLength}
+        min={min}
+        max={max}
+        {...rest}
+        type={type}
+        onBlur={this.onBlur}
+        autoComplete={this.getAutoComplete()}
       />
     );
   };
@@ -228,8 +296,12 @@ class Input extends React.Component {
   }
 }
 
-Input.Small = withProps({
-  Styles: InputStyles.Small,
+Input.Skeleton = ({ height = '53px' }) => <Skeleton height={height} />;
+
+Input.Small = defaultProps({
+  Styles: styles.InputStyles.Small,
 })(Input);
+
+Input.Small.Skeleton = ({ height = '30px' }) => <Skeleton height={height} />;
 
 export default Input;

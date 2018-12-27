@@ -1,72 +1,127 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ExpandToggle } from '../../src';
 import styled from 'styled-components';
+import some from 'lodash.some';
+
+const Container = styled.div`
+  padding: 0 var(--spacing-medium) var(--spacing-extra-large);
+`;
 
 const List = styled.ul`
-  padding: 8px;
-  color: rgb(0, 141, 177);
-  font-weight: bold;
-  margin: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+`;
 
-  & ul {
-    padding-left: 8px;
-    & li {
-      font-weight: normal;
-      color: black;
-    }
+const SectionHeader = styled.div`
+  flex: 1 1 auto;
+  text-transform: uppercase;
+  font-size: 0.85em;
+  font-weight: bold;
+  color: #5f5f5f;
+  * + & {
+    margin-top: var(--spacing-small);
   }
 `;
 
 const Link = styled.a`
   text-decoration: none;
-  color: inherit;
-  font-weight: inherit;
-
-  ${({ active }) => (active ? 'color: #00bef0;' : '')} &:focus, &:active {
-    color: #00bef0;
+  & > span {
+    text-decoration: ${({ deprecated }) =>
+      deprecated ? 'line-through' : 'none'};
   }
-`;
-
-const Item = styled.li`
-  list-style: none;
-  display: block;
-  font-weight: inherit;
   color: inherit;
+  font-weight: lighter;
+  font-family: var(--fonts-brand);
+  letter-spacing: 0.2px;
+  text-rendering: optimizeLegibility;
+  margin-left: var(--spacing-medium);
+  color: ${({ deprecated, active }) =>
+    active
+      ? 'var(--colors-primary-default)'
+      : deprecated
+        ? 'var(--colors-text-disabled)'
+        : 'var(--colors-gray-dark)'};
 `;
 
 export default class ComponentsListRenderer extends React.Component {
   static propTypes = {
     items: PropTypes.array.isRequired,
-    classes: PropTypes.object.isRequired,
+    classes: PropTypes.object,
+  };
+
+  sectionJsDocAttr = attrName => section =>
+    section &&
+    section.props &&
+    section.props.doclets &&
+    section.props.doclets[attrName];
+
+  sectionActive = section => `#!/${section.name}` === window.location.hash;
+
+  sectionChildrenFunc = (section, func) =>
+    func(section) ||
+    some(section.sections, s => this.sectionChildrenFunc(s, func)) ||
+    some(section.components, s => this.sectionChildrenFunc(s, func));
+
+  sectionChildrenDeprecated = section =>
+    this.sectionChildrenFunc(section, this.sectionJsDocAttr('deprecated'));
+
+  sectionChildrenActive = section =>
+    this.sectionChildrenFunc(section, this.sectionActive);
+
+  renderSection = section =>
+    section && (
+      <Link
+        key={section.name}
+        href={`#!/${section.name}`}
+        active={this.sectionActive(section)}
+        deprecated={this.sectionChildrenDeprecated(section)}
+      >
+        {this.renderTopLevel(section)}
+      </Link>
+    );
+
+  renderTopLevel = (section, topLevel = false) => {
+    const { name, visibleName, sections = [], components = [] } = section;
+    let listItems = [];
+    if (sections.length > 0) listItems = sections;
+    else if (components.length > 0) listItems = components;
+    listItems = listItems.filter(s => s.name !== name);
+    if (topLevel) {
+      return (
+        <React.Fragment key={name}>
+          <SectionHeader>{name}</SectionHeader>
+          {listItems &&
+            listItems.length > 0 && (
+              <List>{listItems.map(this.renderSection)}</List>
+            )}
+        </React.Fragment>
+      );
+    }
+    return (
+      <React.Fragment key={name}>
+        <span>{visibleName || name}</span>
+        {this.sectionChildrenActive(section) && (
+          <List>{listItems.map(this.renderSection)}</List>
+        )}
+      </React.Fragment>
+    );
   };
 
   render() {
-    let { classes, items } = this.props;
+    let { items } = this.props;
+
     items = items.filter(item => item.name);
 
     if (!items.length) {
       return null;
     }
 
-    const currentPath = window.location.hash;
-
     return (
-      <List>
-        {items.map(({ heading, name, slug, content }) => (
-          <Item key={name}>
-            <ExpandToggle
-              toggleContent={
-                <Link href={`#${slug}`} active={`#${slug}` === currentPath}>
-                  {name}
-                </Link>
-              }
-            >
-              {content}
-            </ExpandToggle>
-          </Item>
-        ))}
-      </List>
+      <Container>
+        <List>{items.map(section => this.renderTopLevel(section, true))}</List>
+      </Container>
     );
   }
 }

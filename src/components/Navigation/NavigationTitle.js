@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Logo from '../Logo';
-import NavigationLogoPairWrapper from './styles/NavigationLogoPairWrapper';
-import NavigationHeading from './styles/NavigationHeading';
+import DefaultLogo from 'components/Logo';
+import * as styles from './styles';
 
 class LogoHeader extends React.Component {
   static propTypes = {
@@ -21,26 +20,41 @@ class LogoHeader extends React.Component {
     /**
      * A component to wrap the logo and heading text
      */
-    LogoPairWrapper: PropTypes.func,
+    LogoPairWrapper: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+    /**
+     * A component to render the logo
+     */
+    Logo: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render the heading text
      */
-    Heading: PropTypes.func,
+    Heading: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
     children: 'Bandwidth',
     className: null,
     id: null,
-    LogoPairWrapper: NavigationLogoPairWrapper,
-    Heading: NavigationHeading,
+    LogoPairWrapper: styles.LogoPairWrapper,
+    Logo: DefaultLogo,
+    Heading: styles.Heading,
   };
 
+  static styles = styles;
+
   render() {
-    const { children, id, className, LogoPairWrapper, Heading } = this.props;
+    const {
+      children,
+      id,
+      className,
+      LogoPairWrapper,
+      Logo,
+      Heading,
+      ...rest
+    } = this.props;
 
     return (
-      <LogoPairWrapper id={id} className={className}>
+      <LogoPairWrapper id={id} className={className} {...rest}>
         <Logo />
         <Heading>{children}</Heading>
       </LogoPairWrapper>

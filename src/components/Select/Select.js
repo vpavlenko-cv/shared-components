@@ -1,95 +1,35 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import LibSelect from 'react-select';
-import arrowImage from './arrow.png';
-import theme from '../../theme';
-import _ from 'lodash';
-import selectOptionPrimaryValue from '../../extensions/selectItemPrimaryValue';
-import Loader from '../Loader';
-import SelectWrapper from './styles/SelectWrapper';
+import * as styles from './styles';
+import Downshift from 'downshift';
+import { Manager, Reference, Popper } from 'react-popper';
+import popperMatchWidthModifier from './popperMatchWidthModifier';
+import { Foreground } from 'behaviors';
+import isString from 'lodash.isstring';
+import isPlainObject from 'lodash.isplainobject';
 
-class Select extends React.Component {
+const defaultRenderOption = option => {
+  if (!option) {
+    return '';
+  }
+
+  if (isString(option)) {
+    return option;
+  }
+
+  if (isPlainObject(option)) {
+    return option.label || option.name || option.id || JSON.stringify(option);
+  }
+
+  return JSON.stringify(option);
+};
+
+class Select extends React.PureComponent {
   static propTypes = {
-    /**
-     * Whether to blur the component upon selection
-     */
-    autoBlur: PropTypes.bool,
-    /**
-     * Whether to focus the component on mount
-     */
-    autoFocus: PropTypes.bool,
-    /**
-     * Whether to close the menu when a value is selected
-     */
-    closeOnSelect: PropTypes.bool,
-    /**
-     * Whether pressing backspace will clear a value.
-     */
-    deleteRemoves: PropTypes.bool,
-    /**
-     * delimiter to use to join multiple values for the hidden field value
-     */
-    delimiter: PropTypes.string,
-    /**
-     * method to filter a single option (option, filterString)
-     */
-    filterOption: PropTypes.func,
-    /**
-     * boolean to enable default filtering or function to filter the options array ([options], filterString, [values])
-     */
-    filterOptions: PropTypes.func,
-    /**
-     * whether to strip diacritics when filtering
-     */
-    ignoreAccents: PropTypes.bool,
-    /**
-     * whether to perform case-insensitive filtering
-     */
-    ignoreCase: PropTypes.bool,
-    /**
-     * custom attributes for the Input
-     */
-    inputProps: PropTypes.object,
-    /**
-     * controls whether the component renders in a loading state
-     */
-    isLoading: PropTypes.bool,
-    /**
-     * Enables multi-select mode
-     */
-    multi: PropTypes.bool,
     /**
      * The name to apply to the input field
      */
     name: PropTypes.string,
-    /**
-     * Handler for blur events on the input
-     */
-    onBlur: PropTypes.func,
-    /**
-     * Handler for closing the options list
-     */
-    onClose: PropTypes.func,
-    /**
-     * Handler for focus events on the input
-     */
-    onFocus: PropTypes.func,
-    /**
-     * Handles raw input change events
-     */
-    onInputChange: PropTypes.func,
-    /**
-     * Handles raw input key down events
-     */
-    onInputKeyDown: PropTypes.func,
-    /**
-     * Handler for opening the options list
-     */
-    onOpen: PropTypes.func,
-    /**
-     * Handler for when an option is selected (value, event) => {}
-     */
-    onValueClick: PropTypes.func,
     /**
      * Text or node to show if none is selected
      */
@@ -111,6 +51,10 @@ class Select extends React.Component {
      */
     required: PropTypes.bool,
     /**
+     * Styles this field as being invalid
+     */
+    invalid: PropTypes.bool,
+    /**
      * A list of selection options. Can be complex objects.
      */
     options: PropTypes.array.isRequired,
@@ -120,44 +64,34 @@ class Select extends React.Component {
      */
     renderOption: PropTypes.func,
     /**
-     * A function which takes an option and computes a single string value to
-     * represent it. Has a sane default.
-     */
-    getOptionValue: PropTypes.func,
-    /**
      * The currently selected value.
      */
     value: PropTypes.any,
     /**
-     * Handler for change events on the select. It will be called with the new value
-     * computed from getOptionValue.
+     * Handler for change events on the select. It will be called with the exact
+     * option you passed in via options
      */
-    onChange: PropTypes.func.isRequired,
-    /**
-     * Whether to enable searching to filter to the desired item.
-     */
-    searchable: PropTypes.bool,
+    onChange: PropTypes.func,
     /**
      * Alias for isLoading
      */
     loading: PropTypes.bool,
     /**
-     * DEPRECATED: use getOptionValue
+     * Any additional props you want to pass to the underlying Popper instance
      */
-    selectOptionValue: PropTypes.func,
+    popperProps: PropTypes.object,
     /**
-     * DEPRECATED: use required to prevent None, or omit it to allow None
+     * Renders the visible input and controls which show
+     * the currently selected value and allow interaction.
+     * Use to override behavior. Reference the library's default implementation
+     * code for details about how to implement your custom version.
      */
-    allowNone: PropTypes.bool,
+    CurrentValue: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     /**
-     * DEPRECATED: use placeholder
+     * Renders the options list. Reference the library's default implementation
+     * code for details about how to implement your own custom version
      */
-    noneText: PropTypes.string,
-    /**
-     * A component that wraps the library select component, letting you
-     * change styles.
-     */
-    Wrapper: PropTypes.func,
+    Options: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
   };
 
   static defaultProps = {
@@ -166,47 +100,20 @@ class Select extends React.Component {
     disabled: false,
     required: false,
     allowNone: false,
-    placeholder: 'None',
-    renderOption: selectOptionPrimaryValue,
-    getOptionValue: selectOptionPrimaryValue,
-    searchable: false,
-    Wrapper: SelectWrapper,
+    invalid: false,
+    placeholder: 'Select one',
+    renderOption: defaultRenderOption,
+    defaultHighlightedIndex: 0,
+    CurrentValue: styles.CurrentValue,
+    Options: styles.Options,
   };
 
-  /**
-   * Takes the options provided and converts them into
-   * react-select options using user-provided conversion
-   * functions to generate a displayed label and a backing value
-   *
-   * @memberof Select
-   */
-  convertOptions = () => {
-    const {
-      options,
-      renderOption,
-      getOptionValue,
-      selectOptionValue,
-    } = this.props;
+  static styles = styles;
 
-    return options.map(opt => ({
-      label: renderOption(opt),
-      value: (getOptionValue || selectOptionValue)(opt),
-    }));
-  };
-
-  /**
-   * Intercepts the change event and calls the onChange prop
-   * with the value alone.
-   *
-   * @memberof Select
-   */
-  handleChange = newValue => {
-    if (!newValue) {
-      this.props.onChange(newValue);
-    } else if (this.props.multi) {
-      this.props.onChange(newValue.map(item => item.value));
-    } else {
-      this.props.onChange(newValue.value);
+  componentDidUpdate = prevProps => {
+    // Force popper to update if the options were filtered, since it can change its positioning.
+    if (prevProps.options !== this.props.options && this.scheduleUpdate) {
+      this.scheduleUpdate();
     }
   };
 
@@ -218,24 +125,92 @@ class Select extends React.Component {
       allowNone,
       isLoading,
       loading,
-      Wrapper,
+      invalid,
+      value,
+      renderOption,
+      optionToString,
+      options,
+      getOptionValue,
+      searchable,
+      disabled,
+      onChange,
+      Searchable,
+      CurrentValue,
+      Options,
+      id,
+      className,
+      popperProps,
+      name,
+      ...rest
     } = this.props;
     const combinedLoading = loading || isLoading;
-    const combinedPlaceholder = placeholder || noneText;
+    const combinedPlaceholder = noneText !== undefined ? noneText : placeholder;
 
     return (
-      <Wrapper>
-        <LibSelect
-          {...this.props}
-          options={this.convertOptions()}
-          onChange={this.handleChange}
-          clearable={!required || allowNone}
-          placeholder={
-            combinedLoading ? <Loader size="14px" /> : combinedPlaceholder
-          }
-          isLoading={combinedLoading}
-        />
-      </Wrapper>
+      <Downshift
+        onChange={onChange}
+        itemCount={options.length}
+        itemToString={renderOption}
+        selectedItem={value}
+        {...rest}
+      >
+        {({ inputValue, ...downshiftProps }) => (
+          <div>
+            <Manager>
+              <Reference>
+                {({ ref }) => (
+                  <CurrentValue
+                    {...downshiftProps}
+                    inputValue={
+                      downshiftProps.isOpen
+                        ? inputValue
+                        : inputValue ||
+                          downshiftProps.itemToString(
+                            downshiftProps.selectedItem,
+                          )
+                    }
+                    ref={ref}
+                    placeholder={combinedPlaceholder}
+                    disabled={disabled}
+                    loading={combinedLoading}
+                    invalid={invalid}
+                    required={required}
+                    id={id}
+                    className={className}
+                    name={name}
+                  />
+                )}
+              </Reference>
+              {downshiftProps.isOpen && (
+                <Popper
+                  placement="bottom"
+                  boundariesPadding={0}
+                  modifiers={{
+                    matchWidth: popperMatchWidthModifier,
+                    flip: { behavior: 'flip', padding: 20 },
+                    preventOverflow: { escapeWithReference: true, padding: 0 },
+                  }}
+                  {...popperProps}
+                >
+                  {popperStuff => {
+                    this.scheduleUpdate = popperStuff.scheduleUpdate;
+                    return (
+                      <Foreground>
+                        <Options
+                          {...popperStuff}
+                          {...downshiftProps}
+                          renderOption={renderOption}
+                          options={options}
+                        />
+                      </Foreground>
+                    );
+                  }}
+                </Popper>
+              )}
+            </Manager>
+          </div>
+        )}
+      </Downshift>
     );
   }
 }

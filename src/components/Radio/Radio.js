@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import generateId from '../../extensions/generateId';
-import RadioContainer from './styles/RadioContainer';
-import RadioInput from './styles/RadioInput';
-import RadioLabel from './styles/RadioLabel';
+import generateId from 'extensions/generateId';
+import * as styles from './styles';
 
-class Radio extends React.Component {
+/**
+ * A basic `<input type="radio">` component. Group buttons together by setting the `name` prop for them to the same value.
+ */
+class Radio extends React.PureComponent {
   static propTypes = {
     /**
      * Adds a class name to the input element.
@@ -46,15 +47,15 @@ class Radio extends React.Component {
     /**
      * A component for rendering a container around the input and label
      */
-    Container: PropTypes.func,
+    Container: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component for rendering the input (usually hidden)
      */
-    Input: PropTypes.func,
+    Input: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component for rendering the label. By default this also renders the radio button itself.
      */
-    Label: PropTypes.func,
+    Label: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
@@ -65,40 +66,46 @@ class Radio extends React.Component {
     disabled: false,
     description: null,
     onChange: () => null,
-    Container: RadioContainer,
-    Input: RadioInput,
-    Label: RadioLabel,
+    Container: styles.Container,
+    Input: styles.Input,
+    Label: styles.Label,
   };
+
+  static styles = styles;
+
+  defaultId = generateId('radio');
 
   render() {
     const {
-      className,
+      id,
       disabled,
-      value,
       checked,
-      name,
       required,
       description,
-      onChange,
       Container,
       Input,
       Label,
+      ...rest
     } = this.props;
-    const id = this.props.id || generateId('toggle');
+
+    const finalId = id || this.defaultId;
+
     return (
       <Container>
         <Input
-          id={id}
-          className={className}
+          id={finalId}
           type="radio"
-          value={value}
-          name={name}
-          disabled={disabled}
+          disabled={!!disabled}
           checked={!!checked}
-          required={required}
-          onChange={onChange}
+          required={!!required}
+          {...rest}
         />
-        <Label htmlFor={id} checked={!!checked}>
+        <Label
+          htmlFor={finalId}
+          checked={!!checked}
+          disabled={!!disabled}
+          required={!!required}
+        >
           {description}
         </Label>
       </Container>
@@ -106,8 +113,8 @@ class Radio extends React.Component {
   }
 }
 
-Radio.Input = RadioInput;
-Radio.Label = RadioLabel;
-Radio.Container = RadioContainer;
+Radio.Input = styles.Input;
+Radio.Label = styles.Label;
+Radio.Container = styles.Container;
 
 export default Radio;

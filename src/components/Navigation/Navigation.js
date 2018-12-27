@@ -1,20 +1,15 @@
-import styled from 'styled-components';
-import get from 'extensions/themeGet';
-import NavigationItemListStack from './styles/NavigationItemListStack';
-import NavigationLogoPairWrapper from './styles/NavigationLogoPairWrapper';
 import NavigationTitle from './NavigationTitle';
-import NavigationItemList from './styles/NavigationItemList';
-import NavigationItem from './styles/NavigationItem';
-import NavigationBar from './styles/NavigationBar';
+import * as styles from './styles';
+
+const NavigationBar = styles.Bar;
 
 NavigationBar.Title = NavigationTitle;
-NavigationBar.ItemListStack = NavigationItemListStack;
-NavigationBar.ItemList = NavigationItemList;
-NavigationBar.Item = NavigationItem;
+NavigationBar.ItemListStack = styles.ItemListStack;
+NavigationBar.ItemList = styles.ItemList;
+NavigationBar.Item = styles.Item;
+NavigationBar.styles = styles;
 
 /**
  * @component
  */
-export const Navigation = props => <NavigationBar {...props} />;
-
 export default NavigationBar;

@@ -1,11 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import generateId from '../../extensions/generateId';
-import CheckboxInput from './styles/CheckboxInput';
-import CheckboxLabel from './styles/CheckboxLabel';
-import CheckboxContainer from './styles/CheckboxContainer';
+import generateId from 'extensions/generateId';
+import * as styles from './styles';
+import { defaultProps } from 'recompose';
 
-export default class Checkbox extends React.Component {
+/**
+ * A simple checkbox input.
+ */
+export default class Checkbox extends React.PureComponent {
   static propTypes = {
     /**
      * Adds a class name to the input element.
@@ -16,9 +18,15 @@ export default class Checkbox extends React.Component {
      */
     id: PropTypes.string,
     /**
-     * The value of the checkbox.
+     * The literal value this checkbox represents. For example, if this checkbox
+     * represents whether the app is in "Dark Mode", you might provide "darkMode"
+     * to this prop to represent that value key.
      */
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+    value: PropTypes.string,
+    /**
+     * Whether the checkbox is checked or not.
+     */
+    checked: PropTypes.bool,
     /**
      * Whether the checkbox is required for form submission.
      */
@@ -38,57 +46,73 @@ export default class Checkbox extends React.Component {
     /**
      * A component to render an input, by default hidden.
      */
-    Input: PropTypes.func,
+    Input: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render a label. By default this component renders the checkbox itself as a pseudoelement pair.
      */
-    Label: PropTypes.func,
+    Label: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component to render the wrapping element of the assembled checkbox/label
      */
-    Container: PropTypes.func,
+    Container: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
     className: null,
     id: null,
-    value: false,
+    value: undefined,
+    checked: undefined,
     required: false,
     disabled: false,
     description: null,
     onChange: () => null,
-    Input: CheckboxInput,
-    Label: CheckboxLabel,
-    Container: CheckboxContainer,
+    Input: styles.Input,
+    Label: styles.Label,
+    Container: styles.Container,
   };
+
+  static styles = styles;
+
+  static Small = defaultProps({
+    Label: styles.Label.Small,
+  })(Checkbox);
+
+  defaultId = generateId('checkbox');
 
   render() {
     const {
+      id,
       className,
       disabled,
-      value,
+      name,
       required,
       description,
       onChange,
       Container,
       Input,
       Label,
+      value,
+      checked,
+      ...rest
     } = this.props;
 
-    const id = this.props.id || generateId('checkbox');
+    const finalId = id || this.defaultId;
 
     return (
       <Container>
         <Input
-          id={id}
+          name={name}
+          id={finalId}
           className={className}
           type="checkbox"
           disabled={disabled}
-          checked={!!value}
+          checked={checked}
+          value={value}
           required={required}
           onChange={onChange}
+          {...rest}
         />
-        <Label htmlFor={id} active={!!value}>
+        <Label htmlFor={finalId} active={!!checked}>
           {description}
         </Label>
       </Container>

@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import LoaderRing from './styles/LoaderRing';
-import LoaderContainer from './styles/LoaderContainer';
+import * as styles from './styles';
 
-class Loader extends React.Component {
+class Loader extends React.PureComponent {
   static propTypes = {
     /**
      * The size of each loader 'dot'. Can be any CSS dimension string.
@@ -24,11 +23,11 @@ class Loader extends React.Component {
     /**
      * A component for rendering a ring of the loader
      */
-    Ring: PropTypes.func,
+    Ring: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     /**
      * A component for rendering the containing block of the loader
      */
-    Container: PropTypes.func,
+    Container: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
   };
 
   static defaultProps = {
@@ -36,15 +35,17 @@ class Loader extends React.Component {
     color: null,
     className: null,
     id: null,
-    Ring: LoaderRing,
-    Container: LoaderContainer,
+    Ring: styles.Ring,
+    Container: styles.Container,
   };
 
+  static styles = styles;
+
   render() {
-    const { size, color, id, className, Container, Ring } = this.props;
+    const { size, color, id, className, Container, Ring, ...rest } = this.props;
 
     return (
-      <Container id={id} className={className}>
+      <Container id={id} className={className} {...rest}>
         <Ring size={size} color={color} />
         <Ring size={size} color={color} />
         <Ring size={size} color={color} />

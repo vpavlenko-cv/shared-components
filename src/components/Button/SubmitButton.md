@@ -1,16 +1,15 @@
-`SubmitButton` is intended to be used within a Form (most commonly a redux-form). `SubmitButton` should only be used to represent a button that triggers the `onSubmit` actions (do not use for standard actions or cancellation).
+#### Default state
 
-
-**Default state**
 ```
-<SubmitButton>
+<Button.Submit>
     Action
-</SubmitButton>
+</Button.Submit>
 ```
 
-**On Submit / Loading:**
+#### On Submit / Loading:
+
 ```
-<SubmitButton loading>
+<Button.Submit loading>
     Action
-</SubmitButton>
+</Button.Submit>
 ```
